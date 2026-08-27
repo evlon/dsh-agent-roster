@@ -6,8 +6,8 @@
   "type": "module",
   "license": "MIT",
   "bin": {
-    "roster": "bin/roster.mjs",
-    "roster-server": "bin/roster-server.mjs"
+    "dsh-roster": "bin/dsh-roster.mjs",
+    "dsh-roster-server": "bin/dsh-roster-server.mjs"
   },
   "workspaces": [
     "packages/*"

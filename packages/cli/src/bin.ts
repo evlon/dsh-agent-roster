@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * `roster` CLI entry. Talk to a roster server to view/update the digital twin
- * roster. Designed to be called by agents (via bash/pwsh) as well as humans.
+ * `dsh-roster` CLI entry. Talk to a roster server to view/update the digital
+ * twin roster. Designed to be called by agents (via bash/pwsh) as well as
+ * humans.
  *
  * Config: `ROSTER_URL` (or `--url`), `ROSTER_TOKEN` (or `--token`).
  * Output: JSON on stdout; diagnostics on stderr.
@@ -28,34 +29,34 @@ function effectiveToken(flag?: string): string | undefined {
 function usage(): never {
   process.stderr.write(
     [
-      'roster <command> [options]',
+      'dsh-roster <command> [options]',
       '',
       'View:',
-      '  roster list [--url U] [--token T]                    list the whole roster',
-      '  roster get <twinId> [--url U] [--token T]             get one twin entry',
-      '  roster self [--url U] [--token T]                     get your own entry (from token)',
-      '  roster whoami [--url U] [--token T]                   show your token identity',
+      '  dsh-roster list [--url U] [--token T]                    list the whole roster',
+      '  dsh-roster get <twinId> [--url U] [--token T]             get one twin entry',
+      '  dsh-roster self [--url U] [--token T]                     get your own entry (from token)',
+      '  dsh-roster whoami [--url U] [--token T]                   show your token identity',
       '',
       'Update your own info:',
-      '  roster update-info --displayName N --role R [--owner O]',
+      '  dsh-roster update-info --displayName N --role R [--owner O]',
       '      [--description D] [--tags a,b,c] [--clear-tags] [--url U] [--token T]',
       '',
       'Current work:',
-      '  roster work add --title T [--description D] [--status active|paused|blocked]',
+      '  dsh-roster work add --title T [--description D] [--status active|paused|blocked]',
       '      [--eta EPOCH_MS] [--url U] [--token T]',
-      '  roster work update <id> --title T [--status S] [--description D] [--url U] [--token T]',
-      '  roster work remove <id> [--url U] [--token T]',
-      '  roster work replace --items-json \'[...]\' [--url U] [--token T]   replace all',
+      '  dsh-roster work update <id> --title T [--status S] [--description D] [--url U] [--token T]',
+      '  dsh-roster work remove <id> [--url U] [--token T]',
+      '  dsh-roster work replace --items-json \'[...]\' [--url U] [--token T]   replace all',
       '',
       'Completed work:',
-      '  roster done add --title T [--description D] [--repo R] [--completed-at EPOCH_MS]',
+      '  dsh-roster done add --title T [--description D] [--repo R] [--completed-at EPOCH_MS]',
       '      [--id ID] [--url U] [--token T]',
       '',
       'Presence:',
-      '  roster heartbeat [--url U] [--token T]',
+      '  dsh-roster heartbeat [--url U] [--token T]',
       '',
       'Skill:',
-      '  roster init-skill [--target DIR] [--source FILE]   install the roster skill into a dsh skill root',
+      '  dsh-roster init-skill [--target DIR] [--source FILE]   install the roster skill into a dsh skill root',
       '      (default: ~/.dsh/skills; runs if skill not yet installed)',
       '',
       'Env:',
@@ -283,9 +284,9 @@ function mustTwin(token: string | undefined): string {
 
 main().catch((err) => {
   if (err instanceof CliError) {
-    process.stderr.write(`roster: ${err.message}\n`)
+    process.stderr.write(`dsh-roster: ${err.message}\n`)
     process.exit(err.exitCode)
   }
-  process.stderr.write(`roster: unexpected error: ${err instanceof Error ? err.message : String(err)}\n`)
+  process.stderr.write(`dsh-roster: unexpected error: ${err instanceof Error ? err.message : String(err)}\n`)
   process.exit(2)
 })

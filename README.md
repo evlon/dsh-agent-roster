@@ -4,9 +4,9 @@
 
 采用 **CLI + skill** 方案，最大化通用性：
 
-- **roster 服务端**（独立 HTTP 服务，Node.js + TypeScript）：中心化存储，可被多台机器上的分身访问。
-- **roster CLI**（零第三方依赖的 Node 脚本）：分身通过它查看/更新花名册，不绑定任何特定 agent 框架。
-- **roster skill**（SKILL.md）：装在 dsh 的 skill 发现目录，指导分身"何时、如何用 CLI 维护/查看花名册"。
+- **roster 服务端**（独立 HTTP 服务，Node.js + TypeScript）：中心化存储，可被多台机器上的分身访问。npm 包名 `dsh-roster-server`，命令 `dsh-roster-server`。
+- **roster CLI**（零第三方依赖的 Node 脚本）：分身通过它查看/更新花名册，不绑定任何特定 agent 框架。npm 包名 `dsh-roster-cli`，命令 `dsh-roster`。
+- **roster skill**（SKILL.md）：装在 dsh 的 skill 发现目录，指导分身"何时、如何用 CLI 维护/查看花名册"。skill 名 `dsh-roster`。
 
 ## 目录结构
 
@@ -16,9 +16,9 @@ roster/
 ├─ tsconfig.base.json
 ├─ packages/
 │  ├─ core/                # 共享类型、token、store 逻辑
-│  ├─ server/              # HTTP 服务端 + roster-server CLI
-│  └─ cli/                 # roster CLI
-├─ skills/roster/SKILL.md  # 分身 skill
+│  ├─ server/              # HTTP 服务端 + dsh-roster-server CLI
+│  └─ cli/                 # dsh-roster CLI
+├─ skills/dsh-roster/SKILL.md  # 分身 skill
 ├─ install-skill.ps1/.sh   # 安装 skill 到 dsh
 └─ README.md
 ```
@@ -56,8 +56,10 @@ npm test
 
 发布为两个 npm 包（公共 registry）：
 
-- **`roster-server`** — 服务端，部署在服务器上。
-- **`roster`** — 分身用的 CLI（内含 skill 资产，`roster init-skill` 可初始化 skill）。
+- **`dsh-roster-server`** — 服务端，部署在服务器上。
+- **`dsh-roster-cli`** — 分身用的 CLI（内含 skill 资产，`dsh-roster init-skill` 可初始化 skill）。
+
+> 注意：npm 上的裸名 `roster-server` / `roster` / `roster-cli` 均已被无关项目占用，故以 `dsh-*` 前缀发布。
 
 打 tag 触发 GitHub Actions 自动发布（需仓库 secret `NPM_TOKEN`）：
 
@@ -71,18 +73,18 @@ git push --tags        # 触发 .github/workflows/npm-publish.yml
 在服务器上全局安装服务端包：
 
 ```bash
-npm install -g roster-server
+npm install -g dsh-roster-server
 ```
 
 然后签发 token 并启动：
 
 ```bash
 # 生成并签发 token（每个分身一个写 token，可选 read token）
-roster-server add-twin ai-alpha --write
+dsh-roster-server add-twin ai-alpha --write
 
 # 启动服务端
 ROSTER_DB=/data/roster.db ROSTER_SECRET=<secret> \
-  roster-server serve --port 8765
+  dsh-roster-server serve --port 8765
 ```
 
 环境变量：
@@ -93,7 +95,7 @@ ROSTER_DB=/data/roster.db ROSTER_SECRET=<secret> \
 | `ROSTER_SECRET` | 服务端签名密钥；未设置时首次启动会生成并持久化到 db 的 `settings` 表 |
 | `ROSTER_PORT` / `ROSTER_HOST` | 监听端口（默认 8765）/ 主机（默认 0.0.0.0） |
 
-`roster-server` 子命令：
+`dsh-roster-server` 子命令：
 
 - `serve [--port N] [--host H] [--db PATH]` — 启动服务
 - `add-twin <twinId> [--write|--read]` — 为某分身签发 token（输出一次，务必安全保存）
@@ -108,29 +110,29 @@ ROSTER_DB=/data/roster.db ROSTER_SECRET=<secret> \
 
 ## 分身如何使用（CLI）
 
-分身（agent）用 `roster` 命令访问，配置 `ROSTER_URL` + `ROSTER_TOKEN`：
+分身（agent）用 `dsh-roster` 命令访问，配置 `ROSTER_URL` + `ROSTER_TOKEN`：
 
 ```bash
-npm install -g roster          # 安装 CLI（一次性）
+npm install -g dsh-roster-cli     # 安装 CLI（一次性）
 
 export ROSTER_URL=http://roster-host:8765
 export ROSTER_TOKEN=roster.ai-alpha.write.xxxx        # 由 add-twin 签发
 
-roster list                                          # 看全体：岗位/进行中/活跃
-roster get ai-beta                                   # 看某个分身
-roster whoami                                        # 确认自己的 twinId
+dsh-roster list                                          # 看全体：岗位/进行中/活跃
+dsh-roster get ai-beta                                   # 看某个分身
+dsh-roster whoami                                        # 确认自己的 twinId
 
-roster update-info --displayName "AI Alpha" --role dev \
+dsh-roster update-info --displayName "AI Alpha" --role dev \
   --owner "@owner:example.org" --description "后端" --tags node,go
 
-roster work add --title "正在做的任务" --status active
-roster work update <id> --title "新标题" --status blocked
-roster work remove <id>
-roster work replace --items-json '[{"title":"A"}]'
+dsh-roster work add --title "正在做的任务" --status active
+dsh-roster work update <id> --title "新标题" --status blocked
+dsh-roster work remove <id>
+dsh-roster work replace --items-json '[{"title":"A"}]'
 
-roster done add --title "完成的事" --repo "repo/x"
+dsh-roster done add --title "完成的事" --repo "repo/x"
 
-roster heartbeat                                    # 定期上报在线
+dsh-roster heartbeat                                    # 定期上报在线
 ```
 
 所有命令输出 JSON（stdout），错误到 stderr；退出码 `0` 成功、`1` 认证/权限、`2` 网络/服务端、`3` 参数错误。
@@ -143,16 +145,16 @@ roster heartbeat                                    # 定期上报在线
 
 ## 安装 skill 到 dsh
 
-skill 让分身模型知道如何用 `roster` CLI。安装后，分身会话会看到 `roster` skill 出现在 skill 目录中。
+skill 让分身模型知道如何用 `dsh-roster` CLI。安装后，分身会话会看到 `dsh-roster` skill 出现在 skill 目录中。
 
 **推荐：CLI 自带初始化（skill 不存在就初始化）**
 
-`roster` CLI 包里内置了 SKILL.md 资产，安装后可直接初始化：
+`dsh-roster-cli` 包里内置了 SKILL.md 资产，安装后可直接初始化：
 
 ```bash
-npm install -g roster
-roster init-skill                 # 检测 ~/.dsh/skills/roster，不存在则写入
-roster init-skill --target /path/to/skills   # 指定 skill 根
+npm install -g dsh-roster-cli
+dsh-roster init-skill                 # 检测 ~/.dsh/skills/dsh-roster，不存在则写入
+dsh-roster init-skill --target /path/to/skills   # 指定 skill 根
 ```
 
 **备选：从源码仓库安装**
@@ -169,7 +171,7 @@ roster init-skill --target /path/to/skills   # 指定 skill 根
 TARGET=/data/skills ./install-skill.sh
 ```
 
-默认装到 `~/.dsh/skills/roster/SKILL.md`。dsh 默认扫描的 skill 根：`<projectRoot>/.dsh/skills`、`~/.dsh/skills`、`~/.agents/skills`。若各分身使用独立 HOME，需在各自环境下各装一份（或各自跑一次 `roster init-skill`）。
+默认装到 `~/.dsh/skills/dsh-roster/SKILL.md`。dsh 默认扫描的 skill 根：`<projectRoot>/.dsh/skills`、`~/.dsh/skills`、`~/.agents/skills`。若各分身使用独立 HOME，需在各自环境下各装一份（或各自跑一次 `dsh-roster init-skill`）。
 
 ## REST API 摘要
 

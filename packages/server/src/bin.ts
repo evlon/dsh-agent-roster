@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * `roster-server` CLI entry.
+ * `dsh-roster-server` CLI entry.
  *
  * Commands:
- *   roster-server serve [--port N] [--host H] [--db PATH]
- *   roster-server add-twin <twinId> [--write|--read] [--secret S]
- *   roster-server tokens [--db PATH] [--secret S]
- *   roster-server hash-token <token>
+ *   dsh-roster-server serve [--port N] [--host H] [--db PATH]
+ *   dsh-roster-server add-twin <twinId> [--write|--read] [--secret S]
+ *   dsh-roster-server tokens [--db PATH] [--secret S]
+ *   dsh-roster-server hash-token <token>
  *
  * The server secret is resolved from `ROSTER_SECRET`, then from the sqlite
  * settings table (auto-persisted on first run). For `add-twin`/`tokens`
@@ -22,7 +22,7 @@ import { startServer } from './index.js'
 function usage(): never {
   process.stderr.write(
     [
-      'roster-server <command>',
+      'dsh-roster-server <command>',
       '',
       '  serve [--port N] [--host H] [--db PATH]     start the HTTP server',
       '  add-twin <twinId> [--write|--read] [--secret S]  issue a token for a twin',
@@ -68,10 +68,10 @@ function resolveSecret(flags: Map<string, string>, db?: RosterDb): string {
     if (persisted) return persisted
     const generated = randomSecret(32)
     db.setSetting('server_secret', generated)
-    process.stderr.write('[roster] generated a new server secret and persisted it to the db\n')
+    process.stderr.write('[dsh-roster-server] generated a new server secret and persisted it to the db\n')
     return generated
   }
-  process.stderr.write('[roster] no server secret found; pass --secret or set ROSTER_SECRET\n')
+  process.stderr.write('[dsh-roster-server] no server secret found; pass --secret or set ROSTER_SECRET\n')
   process.exit(1)
   return '' // unreachable
 }
@@ -89,7 +89,7 @@ async function cmdServe(flags: Map<string, string>): Promise<void> {
     dbPath,
     serverSecret,
   })
-  process.stderr.write(`[roster] server listening at ${url} (db: ${dbPath})\n`)
+  process.stderr.write(`[dsh-roster-server] server listening at ${url} (db: ${dbPath})\n`)
 }
 
 function cmdAddTwin(flags: Map<string, string>, twinId: string): void {
@@ -161,6 +161,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  process.stderr.write(`[roster] fatal: ${err instanceof Error ? err.message : String(err)}\n`)
+  process.stderr.write(`[dsh-roster-server] fatal: ${err instanceof Error ? err.message : String(err)}\n`)
   process.exit(1)
 })

@@ -1,10 +1,10 @@
 {
-  "name": "roster",
+  "name": "dsh-roster-cli",
   "version": "0.1.0",
   "description": "AI digital twin roster CLI: view and update twin profiles, current work, completed work and presence on a roster server.",
   "type": "module",
   "bin": {
-    "roster": "dist/bin.js"
+    "dsh-roster": "dist/bin.js"
   },
   "files": [
     "dist",

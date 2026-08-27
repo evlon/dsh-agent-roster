@@ -12,7 +12,7 @@ before(async () => {
   dir = await mkdtemp(join(tmpdir(), 'roster-skill-'))
   // Create a fake bundled asset so the test does not depend on repo layout.
   assetSource = join(dir, 'SKILL.md')
-  await writeFile(assetSource, '---\nname: roster\n---\n# roster\n', 'utf8')
+  await writeFile(assetSource, '---\nname: dsh-roster\n---\n# dsh-roster\n', 'utf8')
 })
 
 after(async () => {
@@ -20,7 +20,7 @@ after(async () => {
 })
 
 test('bundledSkillPath resolves to a readable SKILL.md (or throws on missing asset)', async () => {
-  // The real package ships assets/roster/SKILL.md; resolve it and confirm readable.
+  // The real package ships assets/dsh-roster/SKILL.md; resolve it and confirm readable.
   const p = bundledSkillPath()
   assert.ok(p.endsWith('SKILL.md'))
   try {
@@ -36,9 +36,9 @@ test('initSkill installs the skill when missing', async () => {
   const res = await initSkill(target, assetSource)
   assert.equal(res.installed, true)
   assert.equal(res.existed, false)
-  assert.equal(res.path, join(target, 'roster', 'SKILL.md'))
+  assert.equal(res.path, join(target, 'dsh-roster', 'SKILL.md'))
   const content = await readFile(res.path, 'utf8')
-  assert.match(content, /name: roster/)
+  assert.match(content, /name: dsh-roster/)
 })
 
 test('initSkill detects an existing identical skill', async () => {
@@ -50,14 +50,14 @@ test('initSkill detects an existing identical skill', async () => {
 
 test('initSkill overwrites a different existing skill', async () => {
   const target = join(dir, 'skills2')
-  const destDir = join(target, 'roster')
+  const destDir = join(target, 'dsh-roster')
   await mkdir(destDir, { recursive: true })
   await writeFile(join(destDir, 'SKILL.md'), 'old content', 'utf8')
   const res = await initSkill(target, assetSource)
   assert.equal(res.installed, true)
   assert.equal(res.existed, false)
   const content = await readFile(join(destDir, 'SKILL.md'), 'utf8')
-  assert.match(content, /name: roster/)
+  assert.match(content, /name: dsh-roster/)
 })
 
 test('initSkill throws when the source asset is missing', async () => {

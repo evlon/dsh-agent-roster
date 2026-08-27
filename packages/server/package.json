@@ -1,12 +1,12 @@
 {
-  "name": "roster-server",
+  "name": "dsh-roster-server",
   "version": "0.1.0",
-  "description": "AI digital twin roster server: a shared HTTP registry of twin profiles, current work, completed work and presence. Deploy on a server and let twins publish/read via the `roster` CLI.",
+  "description": "AI digital twin roster server: a shared HTTP registry of twin profiles, current work, completed work and presence. Deploy on a server and let twins publish/read via the `dsh-roster` CLI.",
   "type": "module",
   "main": "dist/server/src/index.js",
   "types": "dist/server/src/index.d.ts",
   "bin": {
-    "roster-server": "dist/server/src/bin.js"
+    "dsh-roster-server": "dist/server/src/bin.js"
   },
   "exports": {
     ".": {

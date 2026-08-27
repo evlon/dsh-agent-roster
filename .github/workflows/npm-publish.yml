@@ -1,5 +1,5 @@
-# Publishes the roster packages (roster-server, roster) to the public npm
-# registry when a version tag is pushed.
+# Publishes the roster packages (dsh-roster-server, dsh-roster-cli) to the
+# public npm registry when a version tag is pushed.
 #
 # Flow:
 #   1. `npm version <patch|minor|major>` bumps package.json version + tags
@@ -43,12 +43,12 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Publish roster-server
+      - name: Publish dsh-roster-server
         run: npm publish --workspace packages/server --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish roster (CLI)
+      - name: Publish dsh-roster-cli (CLI)
         run: npm publish --workspace packages/cli --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
