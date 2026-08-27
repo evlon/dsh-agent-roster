@@ -1,0 +1,54 @@
+# Publishes the roster packages (roster-server, roster) to the public npm
+# registry when a version tag is pushed.
+#
+# Flow:
+#   1. `npm version <patch|minor|major>` bumps package.json version + tags
+#   2. `git push --tags` triggers this workflow
+#   3. The job installs, builds, tests, and publishes each public package
+#
+# Requires a repository secret named `NPM_TOKEN` (an npm automation token):
+#   Settings > Secrets and variables > Actions > New repository secret: NPM_TOKEN
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    name: Build, test and publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # provenance / attestation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Publish roster-server
+        run: npm publish --workspace packages/server --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish roster (CLI)
+        run: npm publish --workspace packages/cli --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,23 @@
+{
+  "name": "roster",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI digital twin roster: shared registry of twin profiles, current work, completed work and presence, exposed via an HTTP server and a dependency-free CLI, with a dsh skill for agent use.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "roster": "bin/roster.mjs",
+    "roster-server": "bin/roster-server.mjs"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/core && npm run build -w packages/server && npm run build -w packages/cli",
+    "test": "npm run test -w packages/core && npm run test -w packages/server && npm run test -w packages/cli",
+    "dev:server": "npm run dev -w packages/server"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

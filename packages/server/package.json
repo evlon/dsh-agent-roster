@@ -1,0 +1,38 @@
+{
+  "name": "roster-server",
+  "version": "0.1.0",
+  "description": "AI digital twin roster server: a shared HTTP registry of twin profiles, current work, completed work and presence. Deploy on a server and let twins publish/read via the `roster` CLI.",
+  "type": "module",
+  "main": "dist/server/src/index.js",
+  "types": "dist/server/src/index.d.ts",
+  "bin": {
+    "roster-server": "dist/server/src/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/server/src/index.d.ts",
+      "default": "./dist/server/src/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && node --test \"dist/server/src/test/*.test.js\"",
+    "start": "node dist/server/src/bin.js serve"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
