@@ -12,12 +12,15 @@ import { createHandler } from './routes.js'
 export * from './db.js'
 export * from './routes.js'
 export * from './auth.js'
+export * from './ui.js'
 
 export interface ServerOptions {
   host?: string
   port?: number
   dbPath?: string
   serverSecret: string
+  /** Enable the public read-only WEB UI (default true). */
+  uiPublic?: boolean
 }
 
 export interface StartedServer {
@@ -42,7 +45,11 @@ export async function buildStore(dbPath: string): Promise<{ db: RosterDb; store:
 /** Create and start the HTTP server. Returns handles for tests/lifecycle. */
 export async function startServer(opts: ServerOptions): Promise<StartedServer> {
   const { db, store } = await buildStore(opts.dbPath ?? './roster.db')
-  const handler = createHandler({ store, serverSecret: opts.serverSecret })
+  const handler = createHandler({
+    store,
+    serverSecret: opts.serverSecret,
+    uiPublic: opts.uiPublic ?? true,
+  })
   const server = createServer(handler)
   const host = opts.host ?? '0.0.0.0'
   const port = opts.port ?? 8765

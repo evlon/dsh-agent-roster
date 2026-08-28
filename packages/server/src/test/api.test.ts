@@ -143,3 +143,52 @@ test('unknown route returns 404', async () => {
   const r = await req('GET', '/api/nope', readToken)
   assert.equal(r.status, 404)
 })
+
+// --- Public read-only WEB UI ---
+
+function rawGet(path: string): Promise<{ status: number; text: string; type: string }> {
+  return new Promise((resolve, reject) => {
+    const r = request(base + path, { method: 'GET' }, (res) => {
+      let buf = ''
+      res.on('data', (c) => (buf += c))
+      res.on('end', () =>
+        resolve({
+          status: res.statusCode ?? 0,
+          text: buf,
+          type: res.headers['content-type'] ?? '',
+        }),
+      )
+    })
+    r.on('error', reject)
+    r.end()
+  })
+}
+
+test('public UI serves an HTML dashboard at / (no token needed)', async () => {
+  const r = await rawGet('/')
+  assert.equal(r.status, 200)
+  assert.match(r.type, /text\/html/)
+  assert.match(r.text, /数字员工花名册/)
+  assert.match(r.text, /ui\/api\/roster/)
+})
+
+test('public UI also serves at /ui', async () => {
+  const r = await rawGet('/ui')
+  assert.equal(r.status, 200)
+  assert.match(r.type, /text\/html/)
+})
+
+test('public UI JSON endpoint returns roster without auth', async () => {
+  // seed a twin first
+  const aWrite = createToken(SECRET, 'ai-ui', 'write')
+  await req('PUT', '/api/roster/ai-ui/info', aWrite, { displayName: 'UI Twin', role: 'dev' })
+  const r = await rawGet('/ui/api/roster')
+  assert.equal(r.status, 200)
+  const data = JSON.parse(r.text)
+  assert.equal(data.ok, true)
+  const found = data.roster.find((e: { twinId: string }) => e.twinId === 'ai-ui')
+  assert.ok(found)
+  assert.equal(found.displayName, 'UI Twin')
+  assert.equal(found.role, 'dev')
+})
+

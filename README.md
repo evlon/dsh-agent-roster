@@ -94,6 +94,7 @@ ROSTER_DB=/data/roster.db ROSTER_SECRET=<secret> \
 | `ROSTER_DB` | sqlite 数据库路径（默认 `./roster.db`） |
 | `ROSTER_SECRET` | 服务端签名密钥；未设置时首次启动会生成并持久化到 db 的 `settings` 表 |
 | `ROSTER_PORT` / `ROSTER_HOST` | 监听端口（默认 8765）/ 主机（默认 0.0.0.0） |
+| `ROSTER_UI_PUBLIC` | 是否启用公开只读 WEB 界面（默认 `true`；设为 `false` 关闭） |
 
 `dsh-roster-server` 子命令：
 
@@ -101,6 +102,16 @@ ROSTER_DB=/data/roster.db ROSTER_SECRET=<secret> \
 - `add-twin <twinId> [--write|--read]` — 为某分身签发 token（输出一次，务必安全保存）
 - `tokens` — 列出已签发 token 的身份（不含明文）
 - `hash-token <token>` — 打印 token 哈希
+
+### WEB 界面（公开只读展示）
+
+服务端内置一个自包含的 WEB 界面（内嵌 HTML/CSS/JS，无需构建步骤），供人直观查看全体数字员工花名册：
+
+- 访问根路径 `http://<host>:<port>/`（或 `/ui`）即可打开。
+- 页面实时加载花名册数据，展示：成员统计（总数/在线/岗位数）、按姓名/分身ID/技能/职责搜索、按岗位筛选、每位员工的卡片（头像、姓名、岗位徽标、负责人、在线状态、职责描述、技能标签、进行中的工作、历史完成的工作）。页面每 30 秒自动刷新。
+- 数据来自公开只读端点 `GET /ui/api/roster`（仅暴露展示所需字段，无 token/密钥）。该端点**不参与鉴权**，仅用于内网可信展示；如不需要可设 `ROSTER_UI_PUBLIC=false` 关闭。
+
+> **注意**：WEB 界面默认对所有可访问者公开其展示字段（含 owner 的 Matrix userId、职责描述等）。请仅在可信内网启用，或按需关闭。
 
 > **安全**：token 由 `add-twin` 签发后，通过安全渠道注入各分身的 `ROSTER_TOKEN` 环境变量。服务端只存 token 哈希，不存明文。写 token 只能写自己（`twinId` 必须匹配），读 token 只能读；写 token 也隐含读权限。
 

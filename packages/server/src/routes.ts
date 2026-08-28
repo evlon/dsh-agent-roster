@@ -12,10 +12,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { RosterStore } from '../../core/src/index.js'
 import { authenticate, authorizeWrite } from './auth.js'
+import { renderUiPage, uiRosterItems } from './ui.js'
 
 export interface ServerDeps {
   store: RosterStore
   serverSecret: string
+  /** Whether the public read-only WEB UI is enabled (default true). */
+  uiPublic?: boolean
 }
 
 function send(res: ServerResponse, status: number, body: unknown): void {
@@ -53,7 +56,7 @@ function nowMs(): number {
 
 /** Build the HTTP handler. */
 export function createHandler(deps: ServerDeps) {
-  const { store, serverSecret } = deps
+  const { store, serverSecret, uiPublic = true } = deps
 
   return async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = req.url ?? '/'
@@ -66,6 +69,23 @@ export function createHandler(deps: ServerDeps) {
     // /health
     if (path === '/health') {
       return send(res, 200, { ok: true, service: 'roster' })
+    }
+
+    // Public read-only WEB UI (root + /ui). Only active when uiPublic is on.
+    if (uiPublic && (path === '/' || path === '/ui' || path === '/ui/index.html')) {
+      const html = renderUiPage()
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Length': Buffer.byteLength(html),
+        'Cache-Control': 'no-cache',
+      })
+      res.end(html)
+      return
+    }
+
+    // Public read-only JSON for the UI dashboard.
+    if (uiPublic && path === '/ui/api/roster' && method === 'GET') {
+      return send(res, 200, { ok: true, roster: uiRosterItems(store) })
     }
 
     // GET /api/roster

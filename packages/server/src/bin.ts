@@ -30,10 +30,11 @@ function usage(): never {
       '  hash-token <token>                          print the hash of a token',
       '',
       'Environment:',
-      '  ROSTER_SECRET   server secret (auto-persisted if absent)',
-      '  ROSTER_DB       database path (default ./roster.db)',
-      '  ROSTER_PORT     server port (default 8765)',
-      '  ROSTER_HOST     server host (default 0.0.0.0)',
+      '  ROSTER_SECRET      server secret (auto-persisted if absent)',
+      '  ROSTER_DB          database path (default ./roster.db)',
+      '  ROSTER_PORT        server port (default 8765)',
+      '  ROSTER_HOST        server host (default 0.0.0.0)',
+      '  ROSTER_UI_PUBLIC   enable public read-only WEB UI (default true; set "false" to disable)',
       '',
     ].join('\n'),
   )
@@ -83,13 +84,17 @@ async function cmdServe(flags: Map<string, string>): Promise<void> {
   const db = new RosterDb(dbPath)
   const serverSecret = resolveSecret(flags, db)
   db.close()
+  const uiEnv = process.env.ROSTER_UI_PUBLIC
+  const uiPublic = flags.get('ui') === 'false' ? false : flags.get('no-ui') === 'true' ? false : uiEnv === 'false' ? false : true
   const { url } = await startServer({
     host,
     port,
     dbPath,
     serverSecret,
+    uiPublic,
   })
   process.stderr.write(`[dsh-roster-server] server listening at ${url} (db: ${dbPath})\n`)
+  process.stderr.write(`[dsh-roster-server] public UI: ${uiPublic ? 'enabled (http://<host>:<port>/)' : 'disabled'}\n`)
 }
 
 function cmdAddTwin(flags: Map<string, string>, twinId: string): void {
